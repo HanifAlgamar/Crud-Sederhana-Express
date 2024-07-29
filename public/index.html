@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple CRUD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+            width: 300px;
+        }
+
+        form h2 {
+            margin-top: 0;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px 0;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        table th {
+            background-color: #f2f2f2;
+            color: black;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #ddd;
+        }
+
+        table th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+    <script>
+        const serverUrl = 'http://localhost:3000'; // URL server Express.js
+
+        async function fetchRecords() {
+            const response = await fetch(`${serverUrl}/records`);
+            const records = await response.json();
+            const recordsTable = document.getElementById('recordsTable');
+            const tbody = recordsTable.querySelector('tbody');
+            tbody.innerHTML = '';
+            records.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.id}</td>
+                    <td>${record.tanggal}</td>
+                    <td>${record.alamat}</td>
+                    <td>${record.perihal}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function createRecord(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch(`${serverUrl}/records`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            if (response.ok) {
+                fetchRecords();
+            } else {
+                const errorText = await response.text();
+                console.error('Error creating record:', errorText);
+            }
+        }
+
+        async function updateRecord(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const id = formData.get('id');
+            const response = await fetch(`${serverUrl}/records/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            });
+            if (response.ok) {
+                fetchRecords();
+            } else {
+                const errorText = await response.text();
+                console.error('Error updating record:', errorText);
+            }
+        }
+
+        async function deleteRecord(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const id = formData.get('id');
+            const response = await fetch(`${serverUrl}/records/${id}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                fetchRecords();
+            } else {
+                const errorText = await response.text();
+                console.error('Error deleting record:', errorText);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchRecords);
+    </script>
+</head>
+<body>
+    <h1>Simple CRUD</h1>
+    <form onsubmit="createRecord(event)">
+        <h2>Create Record</h2>
+        <label>
+            Tanggal:
+            <input type="date" name="tanggal" required>
+        </label>
+        <label>
+            Alamat:
+            <input type="text" name="alamat" required>
+        </label>
+        <label>
+            Perihal:
+            <input type="text" name="perihal" required>
+        </label>
+        <button type="submit">Create</button>
+    </form>
+
+    <form onsubmit="updateRecord(event)">
+        <h2>Update Record</h2>
+        <label>
+            ID:
+            <input type="number" name="id" required>
+        </label>
+        <label>
+            Tanggal:
+            <input type="date" name="tanggal" required>
+        </label>
+        <label>
+            Alamat:
+            <input type="text" name="alamat" required>
+        </label>
+        <label>
+            Perihal:
+            <input type="text" name="perihal" required>
+        </label>
+        <button type="submit">Update</button>
+    </form>
+
+    <form onsubmit="deleteRecord(event)">
+        <h2>Delete Record</h2>
+        <label>
+            ID:
+            <input type="number" name="id" required>
+        </label>
+        <button type="submit">Delete</button>
+    </form>
+
+    <h2>Records List</h2>
+    <table id="recordsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tanggal</th>
+                <th>Alamat</th>
+                <th>Perihal</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</body>
+</html>
